@@ -30,10 +30,10 @@ GREEN='\033[1;32m' # Light Green.
 
 WHIPTAIL_TITLE="Project NOMAD Installation"
 NOMAD_DIR="/opt/project-nomad"
-MANAGEMENT_COMPOSE_FILE_URL="https://raw.githubusercontent.com/Crosstalk-Solutions/project-nomad/refs/heads/main/install/management_compose.yaml"
-START_SCRIPT_URL="https://raw.githubusercontent.com/Crosstalk-Solutions/project-nomad/refs/heads/main/install/start_nomad.sh"
-STOP_SCRIPT_URL="https://raw.githubusercontent.com/Crosstalk-Solutions/project-nomad/refs/heads/main/install/stop_nomad.sh"
-UPDATE_SCRIPT_URL="https://raw.githubusercontent.com/Crosstalk-Solutions/project-nomad/refs/heads/main/install/update_nomad.sh"
+MANAGEMENT_COMPOSE_FILE_URL="https://raw.githubusercontent.com/DaosPath/project-nomad/main/install/management_compose.yaml"
+START_SCRIPT_URL="https://raw.githubusercontent.com/DaosPath/project-nomad/main/install/start_nomad.sh"
+STOP_SCRIPT_URL="https://raw.githubusercontent.com/DaosPath/project-nomad/main/install/stop_nomad.sh"
+UPDATE_SCRIPT_URL="https://raw.githubusercontent.com/DaosPath/project-nomad/main/install/update_nomad.sh"
 script_option_debug='true'
 accepted_terms='false'
 local_ip_address=''
@@ -90,6 +90,12 @@ check_is_x86_64() {
   local arch
   arch="$(uname -m)"
   if [[ "${arch}" != "x86_64" && "${arch}" != "amd64" ]]; then
+    if [[ "${arch}" == "aarch64" || "${arch}" == "arm64" ]]; then
+      # NOTE (arm64 fork): this fork ships linux/arm64 images (ghcr.io/daospath).
+      # Expect CPU-only AI (no NVIDIA/ROCm on ARM) and modest model sizes on <8 GB hosts.
+      echo -e "${GREEN}#${RESET} Architecture check passed (${arch}, ARM64 fork build).\\n"
+      return
+    fi
     echo -e "${YELLOW}#${RESET} WARNING: Detected architecture '${arch}'. NOMAD officially supports x86_64 only.\\n"
     echo -e "${YELLOW}#${RESET} ARM64/aarch64 support is tracked in PR #419 and is not yet ready.\\n"
     echo -e "${YELLOW}#${RESET} Continuing on an unsupported architecture will likely fail and may leave\\n"
