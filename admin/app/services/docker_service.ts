@@ -656,6 +656,20 @@ export class DockerService {
         }
       }
 
+      // NOTE (arm64 fork): single-arch x86_64-only images fail on ARM with a cryptic
+      // docker error. Block the known ones early with a friendly message. Verified
+      // 2026-09-10 via `docker buildx imagetools inspect` — everything else in the
+      // catalog ships linux/arm64. checkArchSupport() can't catch these because it
+      // returns true for single manifests (no arch info without the config blob).
+      const X86_ONLY_IMAGES = ['excalidraw/excalidraw:sha-4bfc5bb']
+      if (process.arch === 'arm64' && X86_ONLY_IMAGES.includes(service.container_image)) {
+        const msg =
+          `${service.friendly_name || service.service_name} is not available on ARM yet ` +
+          `(${service.container_image} ships x86_64 only).`
+        this._broadcast(service.service_name, 'error', msg)
+        throw new Error(msg)
+      }
+
       const imageExists = await this._checkImageExists(service.container_image)
       if (imageExists) {
         this._broadcast(
