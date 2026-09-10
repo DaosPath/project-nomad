@@ -95,10 +95,12 @@ export class CheckServiceUpdatesJob {
 
       return archMap[arch] || arch.toLowerCase()
     } catch (error) {
+      // NOTE (arm64 fork): never default to amd64 — derive from our own arch.
+      const fallback = process.arch === 'arm64' ? 'arm64' : 'amd64'
       logger.warn(
-        `[CheckServiceUpdatesJob] Could not detect host architecture: ${error.message}. Defaulting to amd64.`
+        `[CheckServiceUpdatesJob] Could not detect host architecture: ${error.message}. Defaulting to ${fallback}.`
       )
-      return 'amd64'
+      return fallback
     }
   }
 
