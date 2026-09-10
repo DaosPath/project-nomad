@@ -744,9 +744,11 @@ export class DockerService {
               },
             ],
           }
-        } else if (gpuResult.type === 'amd') {
+        } else if (gpuResult.type === 'amd' && process.arch === 'x64') {
           // AMD acceleration is opt-out via the 'ai.amdGpuAcceleration' KV key (default-on).
           // Per memory feedback: KV values can be string or boolean — coerce explicitly.
+          // NOTE (arm64 fork): ollama/ollama:rocm has no aarch64 build — gate on x64 so
+          // ARM hosts always fall through to the CPU-only path below.
           const amdEnabledRaw = await KVStore.getValue('ai.amdGpuAcceleration')
           const amdAccelerationEnabled = String(amdEnabledRaw) !== 'false'
 
@@ -1631,7 +1633,8 @@ export class DockerService {
           updatedDeviceRequests = [
             { Driver: 'nvidia', Count: -1, Capabilities: [['gpu']] },
           ]
-        } else if (gpuResult.type === 'amd') {
+        } else if (gpuResult.type === 'amd' && process.arch === 'x64') {
+          // NOTE (arm64 fork): :rocm is x86_64-only — see install-path guard above.
           const amdEnabledRaw = await KVStore.getValue('ai.amdGpuAcceleration')
           const amdAccelerationEnabled = String(amdEnabledRaw) !== 'false'
           if (amdAccelerationEnabled) {

@@ -392,7 +392,8 @@ export class AppAutoUpdateService {
       }
       return archMap[arch] || arch.toLowerCase()
     } catch {
-      return 'amd64'
+      // NOTE (arm64 fork): never default to amd64 — derive from our own arch.
+      return process.arch === 'arm64' ? 'arm64' : 'amd64'
     }
   }
 }
